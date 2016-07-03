@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>UK Student Loan Calculator</title>
+  <meta charset="utf-8">
+  <meta name="description" content="UK Student Loan Calculator">
+  <meta name="author" content="Steve Mainprize">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>UK Student Loan Calculator</h1>
+    <h2></h2>
+    <p>Steve Mainprize<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Introduction</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>This app lets you see how much a university student in England or Wales is likely to have to repay on their student loan, and for how long. A student typically borrows their tuition fees and some living expenses. Interest is charged at RPI (Retail Price Index) + 3%, and repayments are automatically deducted from the student’s salary once they start earning, at a rate of 9% of everything they earn over £21,000. Any debt not paid off after 30 years is written off.</p>
+
+<p>The app lets you play with these parameters:</p>
+
+<ul>
+<li>The annual tuition fee charged by the university. Usually it’s £9000 per year.</li>
+<li>What the student wants to borrow per year for living expenses. It’s capped according to household income.</li>
+<li>How many years the course runs for. You can select 3, 4 or 5 years.</li>
+<li>What annual salary the student might get when they graduate and start work.</li>
+<li>An estimate of the rate at which the salary might increase per year.</li>
+<li>Retail Price Index (RPI), an official government measure of inflation. It determines the rate at which the student is charged interest.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Repayments for a student with a starting salary of £25,000</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Amount borrowed: £38,463.00
+Amount repaid: £72,439.50</p>
+
+<p><img src="assets/fig/unnamed-chunk-2-1.png" alt="plot of chunk unnamed-chunk-2"></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Repayments for a student with a starting salary of £40,000</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Amount borrowed: £38,463.00
+Amount repaid: £63,574.06</p>
+
+<p><img src="assets/fig/unnamed-chunk-4-1.png" alt="plot of chunk unnamed-chunk-4"></p>
+
+<p>The student with the higher salary repays less in total, because they repay the debt more quickly.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Conclusion</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>One interesting result that this app illustrates is that the repayment is a more dependent on the student’s salary than how much they borrow. Within certain parameters, a student repays the same amount over thirty years, even given considerable variation in the amount of debt.</p>
+
+<p>Because interest is usually accruing faster that the student is paying it off, the debt will keep growing for many years, and most students will still be paying a large amount of their income towards paying off their student loan into their fifties.</p>
+
+<p>This app will be useful in educating potential students about the commitment that they are about to enter into.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Introduction'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Repayments for a student with a starting salary of £25,000'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Repayments for a student with a starting salary of £40,000'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Conclusion'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

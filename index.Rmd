@@ -1,0 +1,236 @@
+---
+title       : UK Student Loan Calculator 
+subtitle    : 
+author      : Steve Mainprize
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## Introduction
+
+This app lets you see how much a university student in England or Wales is likely to have to repay on their student loan, and for how long. A student typically borrows their tuition fees and some living expenses. Interest is charged at RPI (Retail Price Index) + 3%, and repayments are automatically deducted from the student’s salary once they start earning, at a rate of 9% of everything they earn over £21,000. Any debt not paid off after 30 years is written off.
+
+The app lets you play with these parameters:
+
+* The annual tuition fee charged by the university. Usually it’s £9000 per year.
+* What the student wants to borrow per year for living expenses. It’s capped according to household income.
+* How many years the course runs for. You can select 3, 4 or 5 years.
+* What annual salary the student might get when they graduate and start work.
+* An estimate of the rate at which the salary might increase per year.
+* Retail Price Index (RPI), an official government measure of inflation. It determines the rate at which the student is charged interest.
+
+--- .class #id 
+
+## Repayments for a student with a starting salary of £25,000
+
+```{r echo=FALSE}
+
+    library(ggplot2)
+ 
+    calcloanmodel<-function(rpi, years, annualtuitionfee, 
+                            annualmaintenance, startingsalary, salaryincrease) {
+    # Initialise variables
+
+    # Debt brought forward and carried forward
+    bf <- 0
+    cf <- 0
+    
+    # Year and month in which course starts. Could be input items, but decided to hard-code
+    # them to save space on the page
+    startyearofcourse <- 2016
+    date <- as.Date(paste(startyearofcourse,"-09-01",sep = ""))
+    
+    # Monthly interest rate, calculated from the annual RPI figure
+    monthlyinterestrate <- (1 + (3 + rpi) / 100) ^ (1 / 12) - 1
+    
+    # Flags for remembering where we're up to in the status of the loan
+    repaymentsstarted <- FALSE
+    loanwrittenoff <- FALSE
+
+    # How many months we need in the model    
+    monthsneeded <- 12 * (as.numeric(years) + 1 + 30) - 5
+
+    # Create a data frame. This will hold a month-by-month flow of debt based on the parameters    
+    loanmodel <-
+      data.frame(
+        date = as.Date(rep(0,monthsneeded), origin = "1900-01-01"),
+        age = numeric(monthsneeded),
+        annualsalary = numeric(monthsneeded),
+        bf = numeric(monthsneeded),
+        receipts = numeric(monthsneeded),
+        interestadded = numeric(monthsneeded),
+        repayment = numeric(monthsneeded),
+        cf = numeric(monthsneeded)
+      )
+    
+    # Initialisation of variables complete
+    
+    # Start to calculate the flow of the loan model
+    
+    rowcount <- 0
+    while (rowcount < monthsneeded) {
+      
+      # increment the row count
+      rowcount <- rowcount + 1
+      
+      # record the date that this row represents
+      loanmodel$date[rowcount] <- date
+      
+      # Set the row's "brought forward" to the previous row's "carried forward"
+      loanmodel$bf[rowcount] <- cf
+
+      # If it's the start of an academic year, add more debt to the pile      
+      if ((format(date,"%m") == "09") &
+          (rowcount < as.numeric(years) * 12)) {
+        loanmodel$receipts[rowcount] <-
+          annualtuitionfee + annualmaintenance
+      }
+      
+      # Calculate the interest added in the current month
+      loanmodel$interestadded[rowcount] <-
+        (loanmodel$bf[rowcount] + loanmodel$receipts[rowcount]) * monthlyinterestrate
+      
+      # Repayments start in the April after the student has graduated.
+      if ((format(date,"%m") == "04") &
+          (rowcount >= as.numeric(years) * 12)) {
+        repaymentsstarted <- TRUE
+      }
+      
+      # Work out what the student is earning in the current month
+      if (rowcount <= (as.numeric(years) * 12)) {
+        # Hasn't started earning yet 
+        loanmodel$annualsalary[rowcount] <- 0
+      } else if (rowcount == (1 + as.numeric(years) * 12)) {
+        # First month of getting paid
+        loanmodel$annualsalary[rowcount] <- startingsalary
+      } else if (format(date,"%m") == "09") {
+        # Assumes that the student gets a pay rise every September, i.e. each anniversary
+        # of starting work. Monthly pay packet this month is calculated by adding the assumed
+        # annual increase to last month's pay packet.
+        loanmodel$annualsalary[rowcount] <-
+          round(loanmodel$annualsalary[(rowcount - 1)] * (100 + salaryincrease) / 100, digits =
+                  -2)
+      } else if (rowcount > (as.numeric(years) * 12)) {
+        # The student gets what they got last month
+        loanmodel$annualsalary[rowcount] <-
+          loanmodel$annualsalary[(rowcount - 1)]
+      }
+      
+      if (repaymentsstarted) {
+        # Calculate their debt repayment this month, which is 9% of whatever their salary
+        # is over 21000 (per annums converted to per month, obviously)
+        if (loanmodel$annualsalary[rowcount]>21000) {
+          loanmodel$repayment[rowcount] = 0.09 * (loanmodel$annualsalary[rowcount] -
+                                                    21000) / 12
+        }
+      }
+      
+      # Work out what debt gets carried forward to next month
+      loanmodel$cf[rowcount] <- loanmodel$bf[rowcount] +
+        loanmodel$receipts[rowcount] +
+        loanmodel$interestadded[rowcount] -
+        loanmodel$repayment[rowcount]
+      
+      # If the debt carried forward to next month would be negative, then the student
+      # has repaid the debt. Cap the repayment to the amount outstanding on the loan.
+      if (loanmodel$cf[rowcount] < 0) {
+        loanmodel$repayment[rowcount] = loanmodel$bf[rowcount] +
+          loanmodel$receipts[rowcount] +
+          loanmodel$interestadded[rowcount]
+        loanmodel$cf[rowcount] = 0
+      }
+      
+      cf <- loanmodel$cf[rowcount]
+      
+      # add a month to the date
+      date <- seq(date, by = paste (1, "months"), length = 2)[2]
+      
+    }
+    
+    return(loanmodel)
+    
+    }
+    
+
+  # First Model
+  rpi <- 0.9
+  years <- 3
+  annualtuitionfee <- 9000
+  annualmaintenance <- 3821
+  startingsalary <- 25000
+  salaryincrease <- 4
+  lm1 <- calcloanmodel(rpi, years, annualtuitionfee, annualmaintenance, startingsalary, salaryincrease)
+
+  # Draw a plot of the amount of debt outstanding
+    plot1 <- ggplot(data=lm1, aes(x=date, y=cf)) +
+      ggtitle("Amount of Debt") +
+      ylab("Pounds") +
+      xlab("Year") +
+      theme(legend.position = "none") +
+      theme(plot.title = element_text(lineheight=.8, face="bold")) +
+      scale_y_continuous(expand = c(0,0)) +
+      expand_limits(y = c(0,60000)) + 
+      theme(axis.line = element_line(size = 3)) +
+      geom_line(aes(group=1), colour="#D55E00")
+
+```
+
+Amount borrowed: £`r format(sum(lm1$receipts),nsmall=2,big.mark=",",small.mark=",") `
+Amount repaid: £`r format(sum(lm1$repayment),nsmall=2,big.mark=",",small.mark=",") `
+
+```{r fig.width=7, fig.height=4, echo=FALSE}
+  plot1
+```
+
+--- .class #id 
+
+## Repayments for a student with a starting salary of £40,000
+
+```{r echo=FALSE}
+
+  # Second Model - exactly the same as the previous model, but with a higher starting salary
+  
+  startingsalary <- 40000
+  lm2 <- calcloanmodel(rpi, years, annualtuitionfee, annualmaintenance, startingsalary, salaryincrease)
+
+  # Draw a plot of the amount of debt outstanding
+    plot2 <- ggplot(data=lm2, aes(x=date, y=cf)) +
+      ggtitle("Amount of Debt") +
+      ylab("Pounds") +
+      xlab("Year") +
+      theme(legend.position = "none") +
+      theme(plot.title = element_text(lineheight=.8, face="bold")) +
+      scale_y_continuous(expand = c(0,0)) +
+      expand_limits(y = c(0,60000)) + 
+      theme(axis.line = element_line(size = 3)) +
+      geom_line(aes(group=1), colour="#D55E00")
+
+```
+
+Amount borrowed: £`r format(sum(lm2$receipts),nsmall=2,big.mark=",",small.mark=",") `
+Amount repaid: £`r format(sum(lm2$repayment),nsmall=2,big.mark=",",small.mark=",") `
+
+```{r fig.width=7, fig.height=4, echo=FALSE}
+  plot2
+```
+
+The student with the higher salary repays less in total, because they repay the debt more quickly.
+
+--- .class #id 
+
+## Conclusion
+
+One interesting result that this app illustrates is that the repayment is a more dependent on the student’s salary than how much they borrow. Within certain parameters, a student repays the same amount over thirty years, even given considerable variation in the amount of debt.
+
+Because interest is usually accruing faster that the student is paying it off, the debt will keep growing for many years, and most students will still be paying a large amount of their income towards paying off their student loan into their fifties.
+
+This app will be useful in educating potential students about the commitment that they are about to enter into.
+
+
+
+
